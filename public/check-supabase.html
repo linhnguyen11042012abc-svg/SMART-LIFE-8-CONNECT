@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Kiểm tra SMART LIFE</title>
+</head>
+<body>
+<h2>SMART LIFE – Kiểm tra kết nối</h2>
+<pre id="result">Đang kiểm tra...</pre>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="supabase-config.js"></script>
+<script>
+(async () => {
+  const out = document.getElementById("result");
+  const lines = [];
+
+  lines.push("Thư viện Supabase: " + typeof window.supabase);
+  lines.push("createClient: " + typeof window.supabase?.createClient);
+  lines.push("Cấu hình: " + typeof window.SMART_LIFE_SUPABASE);
+
+  try {
+    const c = window.SMART_LIFE_SUPABASE;
+    const client = window.supabase.createClient(c.url, c.publishableKey);
+    window.testClient = client;
+    lines.push("Khởi tạo client: THÀNH CÔNG");
+
+    const { error } = await client.auth.getSession();
+    lines.push("Kiểm tra Auth: " + (error ? "CÓ LỖI" : "THÀNH CÔNG"));
+  } catch (e) {
+    lines.push("Lỗi: " + e.message);
+  }
+
+  out.textContent = lines.join("\n");
+})();
+</script>
+</body>
+</html>

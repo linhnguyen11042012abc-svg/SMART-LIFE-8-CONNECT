@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#171936" />
+  <meta name="description" content="SMART LIFE - Tro ly so thong minh cho hoc tap, gia dinh va cong dong." />
+  <title>SMART LIFE – Infinite Adventure 7.0.1</title>
+  <link rel="stylesheet" href="styles.css" />
+  <link rel="stylesheet" href="legendary.css" />
+  <link rel="stylesheet" href="infinite-world.css">
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar" id="sidebar">
+      <a class="brand" href="#" data-page="home">
+        <span class="brand-mark">SL</span>
+        <span><strong>SMART LIFE</strong><small>Trợ lý số thông minh</small></span>
+      </a>
+      <div class="side-label">KHÔNG GIAN CỦA BẠN</div>
+      <nav class="nav-list">
+        <button class="nav-item active" data-page="home"><span>⌂</span> Tổng quan</button>
+        <button class="nav-item" data-page="study"><span>▤</span> Góc học tập</button>
+        <button class="nav-item" data-page="family"><span>⌂</span> Trợ lý gia đình</button>
+        <button class="nav-item" data-page="community"><span>♡</span> Kết nối cộng đồng</button>
+        <button class="nav-item" data-page="ai"><span>✦</span> AI hỗ trợ thông minh</button>
+      </nav>
+      <div class="sidebar-note">
+        <div class="note-icon">✧</div>
+        <strong>Mỗi ngày một điều tốt</strong>
+        <p>Học tập chủ động, sống khoa học và cùng tạo giá trị.</p>
+      </div>
+      <div class="side-footer">SMART LIFE <span>•</span> Infinite Adventure 7.0.1</div>
+    </aside>
+
+    <main class="main-area">
+      <header class="topbar">
+        <button class="mobile-menu" id="mobileMenu" aria-label="Mở menu">☰</button>
+        <div class="breadcrumb">Không gian số <span>/</span> <b id="currentCrumb">Tổng quan</b></div>
+        <div class="top-actions">
+          <span class="status-dot"></span><span class="status-text">Đang hoạt động</span>
+          <button class="global-sound-toggle" id="globalSoundToggle" type="button" aria-label="Bật hoặc tắt nhạc nền">🎵 Bật nhạc</button>
+          <div class="avatar">SL</div>
+        </div>
+      </header>
+
+      <section class="page active" id="page-home">
+        <div class="hero">
+          <div class="hero-copy">
+            <span class="eyebrow">CHÀO MỪNG ĐẾN VỚI SMART LIFE</span>
+            <h1>Công nghệ nhỏ,<br/><em>giá trị lớn.</em></h1>
+            <p>Một không gian kết nối học tập, gia đình và cộng đồng – giúp bạn học tốt hơn và sống khoa học hơn.</p>
+            <button class="primary-btn" data-go="ai">Trò chuyện với trợ lý AI <span>→</span></button>
+          </div>
+          <div class="hero-art" aria-hidden="true">
+            <div class="orbit orbit-one"></div><div class="orbit orbit-two"></div>
+            <div class="phone-illustration">
+              <div class="phone-speaker"></div><div class="bot-face"><span>• •</span><small>SMART AI</small></div>
+              <div class="phone-mini-grid"><i>▤</i><i>⌂</i><i>♡</i><i>✦</i></div>
+            </div>
+            <div class="float-bubble bubble-book">▤</div><div class="float-bubble bubble-leaf">♧</div><div class="float-bubble bubble-star">✦</div>
+          </div>
+        </div>
+
+        <section class="hybrid-world" aria-label="Thế giới SMART LIFE Hybrid">
+          <div class="hybrid-world-head">
+            <div><span class="eyebrow">SMART LIFE UNIVERSE · INFINITE ADVENTURE 7.0</span><h2>Bước vào thế giới nhiệm vụ</h2>
+              <p>Khám phá bản đồ, hoàn thành nhiệm vụ và xây dựng hành trình của riêng bạn.</p></div>
+            <div class="universe-orb" aria-hidden="true"><span>✦</span><i>◈</i></div>
+          </div>
+          <div class="hybrid-pillars">
+            <button class="hybrid-pillar adventure" data-go="study"><span class="pillar-symbol">🗺️</span><b>ADVENTURE</b><small>Khám phá nhiệm vụ và chinh phục thử thách</small><em>Vào hành trình →</em></button>
+            <button class="hybrid-pillar future" data-go="ai"><span class="pillar-symbol">🤖</span><b>FUTURISTIC</b><small>Trò chuyện cùng trợ lý và khám phá công nghệ</small><em>Khám phá AI →</em></button>
+            <button class="hybrid-pillar learning" data-go="study"><span class="pillar-symbol">📚</span><b>LEARNING</b><small>Học tập chủ động qua kiến thức và thực hành</small><em>Đến góc học tập →</em></button>
+          </div>
+          <div class="hybrid-motto"><span>✧</span> Học để khám phá · Sáng tạo để thay đổi · Kết nối để lan tỏa <span>✧</span></div>
+        </section>
+
+        <div class="section-heading">
+          <div><span class="eyebrow">KHÁM PHÁ TIỆN ÍCH</span><h2>Một ứng dụng – nhiều giá trị</h2></div>
+          <span class="soft-tag">4 khu vực chính</span>
+        </div>
+        <div class="feature-grid">
+          <button class="feature-card study-card" data-go="study">
+            <div class="feature-icon">▤</div><div><h3>Góc học tập</h3><p>Tài liệu, ghi chú, luyện tập và kế hoạch học tập.</p><span class="card-link">Khám phá <b>↗</b></span></div>
+          </button>
+          <button class="feature-card family-card" data-go="family">
+            <div class="feature-icon">⌂</div><div><h3>Trợ lý gia đình</h3><p>Nhắc lịch và theo dõi thói quen sử dụng điện, nước.</p><span class="card-link">Khám phá <b>↗</b></span></div>
+          </button>
+          <button class="feature-card community-card" data-go="community">
+            <div class="feature-icon">♡</div><div><h3>Kết nối cộng đồng</h3><p>Chia sẻ hoạt động tích cực và kết nối tình nguyện.</p><span class="card-link">Khám phá <b>↗</b></span></div>
+          </button>
+          <button class="feature-card ai-card" data-go="ai">
+            <div class="feature-icon">✦</div><div><h3>AI hỗ trợ thông minh</h3><p>Giải đáp câu hỏi và đưa ra gợi ý phù hợp.</p><span class="card-link">Khám phá <b>↗</b></span></div>
+          </button>
+        </div>
+
+        <div class="bottom-grid">
+          <div class="panel">
+            <div class="panel-title"><div><span class="eyebrow">HÔM NAY</span><h3>Việc cần làm</h3></div><button class="text-btn" data-go="study">Quản lý →</button></div>
+            <div id="homeTasks" class="task-list"></div>
+          </div>
+          <div class="quote-panel">
+            <span class="quote-mark">“</span>
+            <p>Khi kiến thức kết hợp với sáng tạo và trách nhiệm, công nghệ trở thành cầu nối giúp cuộc sống tốt đẹp hơn.</p>
+            <span class="quote-caption">TINH THẦN SMART LIFE</span>
+          </div>
+        </div>
+      </section>
+
+      <section class="page" id="page-study">
+        <div class="page-intro">
+          <span class="eyebrow">01 / ADVENTURE LEARNING · RPG MODE</span><h1>Góc học tập <em>phiêu lưu</em></h1>
+          <p>Biến mỗi bài học thành một hành trình khám phá, tích lũy kinh nghiệm và mở khóa vùng đất mới.</p>
+        </div>
+        <div id="adventureHub" class="adventure-hub" aria-live="polite"></div>
+        <div class="study-layout">
+          <div class="panel">
+            <div class="panel-title"><div><h3>Kế hoạch học tập</h3><p class="muted">Thêm việc cần làm và đánh dấu khi hoàn thành.</p></div><span class="round-icon">✓</span></div>
+            <form id="taskForm" class="inline-form"><input id="taskInput" maxlength="100" placeholder="Ví dụ: Ôn tập Toán chương 2..." required/><button class="primary-btn" type="submit">+ Thêm</button></form>
+            <div id="taskList" class="task-list"></div>
+          </div>
+          <div class="panel">
+            <div class="panel-title"><div><h3>Ghi chú nhanh</h3><p class="muted">Lưu lại kiến thức quan trọng.</p></div><span class="round-icon">✎</span></div>
+            <form id="noteForm" class="stack-form"><input id="noteTitle" maxlength="70" placeholder="Tên ghi chú" required/><textarea id="noteBody" rows="3" maxlength="1000" placeholder="Nội dung ghi chú..." required></textarea><button class="primary-btn" type="submit">Lưu ghi chú</button></form>
+            <div id="noteList" class="note-list"></div>
+          </div>
+        </div>
+        <div class="panel quiz-panel">
+          <div class="panel-title"><div><h3>Thử thách kiến thức</h3><p class="muted">Luyện tập nhanh với câu hỏi mẫu.</p></div><span class="soft-tag">Trắc nghiệm</span></div>
+          <div id="quizArea" class="quiz-area"></div>
+        </div>
+        <div class="panel pomodoro-panel">
+          <div class="panel-title"><div><h3>⏳ Trạm tập trung</h3><p class="muted">Chia thời gian học thành những phiên ngắn dễ duy trì.</p></div><span class="soft-tag">FOCUS MODE</span></div>
+          <div class="pomodoro-content">
+            <div class="pomodoro-clock" id="pomodoroTime">25:00</div>
+            <div class="pomodoro-track"><span id="pomodoroProgress"></span></div>
+            <p class="pomodoro-status" id="pomodoroStatus">Sẵn sàng cho một phiên tập trung.</p>
+            <div class="pomodoro-modes"><button type="button" class="pomo-mode active" data-pomo-mode="focus">Tập trung · 25 phút</button><button type="button" class="pomo-mode" data-pomo-mode="break">Nghỉ ngắn · 5 phút</button></div>
+            <div class="pomodoro-actions"><button type="button" class="primary-btn" id="pomodoroStart">Bắt đầu</button><button type="button" class="secondary-btn" id="pomodoroPause">Tạm dừng</button><button type="button" class="secondary-btn" id="pomodoroReset">Đặt lại</button></div>
+          </div>
+        </div>
+
+        <section class="panel super-panel" id="studyLab">
+          <div class="panel-title"><div><span class="eyebrow">SUPER LEARNING LAB</span><h3>🧠 Đấu trường tri thức</h3><p class="muted">Chọn môn học, thử sức với câu hỏi và tích lũy thành tích riêng.</p></div><span class="soft-tag">12+ câu hỏi mẫu</span></div>
+          <div class="super-controls">
+            <label>Môn học<select id="superSubject"><option value="all">Tất cả môn học</option><option value="Toán">Toán</option><option value="Ngữ văn">Ngữ văn</option><option value="Tiếng Anh">Tiếng Anh</option><option value="Khoa học">Khoa học</option><option value="Lịch sử">Lịch sử</option><option value="Địa lí">Địa lí</option></select></label>
+            <button class="primary-btn" id="startSuperQuiz" type="button">Bắt đầu thử thách</button>
+          </div>
+          <div class="super-progress" id="superQuizProgress">Chọn môn học rồi bắt đầu nhé!</div>
+          <div id="superQuizCard" class="super-quiz-card"><div class="super-empty">🌟 Mỗi câu trả lời là một bước tiến mới!</div></div>
+          <div class="super-achievements" id="superStudyAchievements"></div>
+        </section>
+      </section>
+
+      <section class="page" id="page-family">
+        <div class="page-intro">
+          <span class="eyebrow">02 / SMART HOME HABITS</span><h1>Trợ lý <em>gia đình</em></h1>
+          <p>Ghi nhớ công việc và theo dõi thói quen sử dụng tài nguyên trong gia đình.</p>
+        </div>
+        <div class="family-grid">
+          <div class="panel">
+            <div class="panel-title"><div><h3>Lịch việc gia đình</h3><p class="muted">Tạo lời nhắc cho những công việc thường ngày.</p></div><span class="round-icon">⌂</span></div>
+            <form id="reminderForm" class="stack-form"><input id="reminderText" maxlength="100" placeholder="Ví dụ: Tưới cây lúc 17:00" required/><input id="reminderDate" type="date" required/><button class="primary-btn" type="submit">+ Tạo lời nhắc</button></form>
+            <div id="reminderList" class="task-list"></div>
+          </div>
+          <div class="panel">
+            <div class="panel-title"><div><h3>Theo dõi điện – nước</h3><p class="muted">Nhập số liệu gia đình ghi nhận được.</p></div><span class="round-icon">♧</span></div>
+            <form id="usageForm" class="stack-form">
+              <label>Loại tài nguyên<select id="usageType"><option value="Điện">Điện (kWh)</option><option value="Nước">Nước (m³)</option></select></label>
+              <label>Mức sử dụng<input id="usageValue" type="number" min="0" step="0.1" placeholder="Nhập số liệu" required/></label>
+              <button class="primary-btn" type="submit">Lưu số liệu</button>
+            </form>
+            <div id="usageSummary" class="usage-summary"></div>
+            <p class="tiny-note">Số liệu do người dùng tự nhập, không phải dữ liệu đo trực tiếp từ công tơ.</p>
+          </div>
+        </div>
+
+        <section class="panel super-panel">
+          <div class="panel-title"><div><span class="eyebrow">SMART HOME TEAM</span><h3>🏡 Nhiệm vụ của gia đình</h3><p class="muted">Cùng phân chia việc nhỏ, xây dựng thói quen hợp tác.</p></div><span class="soft-tag">Bảng việc chung</span></div>
+          <form id="familyTaskForm" class="super-form">
+            <input id="familyTaskName" maxlength="90" placeholder="Ví dụ: Sắp xếp góc học tập..." required />
+            <select id="familyTaskPerson"><option>Em</option><option>Bố</option><option>Mẹ</option><option>Anh/Chị</option><option>Cả nhà</option></select>
+            <input id="familyTaskDate" type="date" />
+            <button class="primary-btn" type="submit">＋ Thêm nhiệm vụ</button>
+          </form>
+          <div id="familyTaskBoard" class="super-list"></div>
+          <div class="super-tip">💡 Hãy trao đổi và thống nhất với các thành viên trước khi phân công. Đây là bảng ghi nhớ trên thiết bị, không tự gửi thông báo.</div>
+        </section>
+        <section class="panel super-panel">
+          <div class="panel-title"><div><h3>🌿 Góc sống tiết kiệm</h3><p class="muted">Gợi ý thói quen đơn giản cho cả nhà.</p></div></div>
+          <div class="tip-grid">
+            <article><span>💡</span><strong>Tiết kiệm điện</strong><p>Tắt đèn và thiết bị khi không sử dụng; tận dụng ánh sáng tự nhiên.</p></article>
+            <article><span>🚰</span><strong>Tiết kiệm nước</strong><p>Khóa vòi khi không dùng và báo người lớn nếu phát hiện rò rỉ.</p></article>
+            <article><span>♻️</span><strong>Giảm rác thải</strong><p>Ưu tiên bình nước cá nhân, phân loại rác theo hướng dẫn địa phương.</p></article>
+          </div>
+        </section>
+      </section>
+
+      <section class="page" id="page-community">
+        <div class="page-intro">
+          <span class="eyebrow">03 / CONNECT & CARE</span><h1>Kết nối <em>cộng đồng</em></h1>
+          <p>Lan tỏa hoạt động tích cực, chia sẻ thông tin và khuyến khích sự sẻ chia.</p>
+        </div>
+        <div class="community-banner"><div><span class="eyebrow">CÙNG NHAU TẠO GIÁ TRỊ</span><h2>Một hành động nhỏ<br/>có thể tạo thay đổi lớn.</h2><p>Chia sẻ hoạt động thiện nguyện, bảo vệ môi trường và giúp đỡ lẫn nhau.</p></div><div class="community-symbol">♡</div></div>
+        <div class="community-layout">
+          <div class="panel">
+            <div class="panel-title"><div><h3>Bảng hoạt động</h3><p class="muted">Các ý tưởng tích cực trong cộng đồng.</p></div><span class="soft-tag">Bản thử nghiệm</span></div>
+            <form id="postForm" class="stack-form"><input id="postTitle" maxlength="80" placeholder="Tên hoạt động..." required/><select id="postCategory"><option>Thiện nguyện</option><option>Bảo vệ môi trường</option><option>Chia sẻ kiến thức</option><option>Hoạt động trường học</option></select><textarea id="postBody" rows="3" maxlength="500" placeholder="Mô tả ngắn về hoạt động..." required></textarea><button class="primary-btn" type="submit">Đăng lên bảng của tôi</button></form>
+            <div id="postList" class="post-list"></div>
+          </div>
+          <aside class="panel safety-panel"><div class="round-icon">♡</div><h3>Chia sẻ an toàn</h3><p>Đây là bảng hoạt động lưu trên thiết bị hiện tại. Không đăng địa chỉ nhà, số điện thoại, mật khẩu hoặc thông tin riêng tư.</p><div class="safety-line">✦ Tôn trọng mọi người</div><div class="safety-line">✦ Chia sẻ nội dung tích cực</div><div class="safety-line">✦ Xin phép người lớn khi tham gia hoạt động ngoài đời</div></aside>
+        </div>
+        <div class="panel community-quests-panel">
+          <div class="panel-title"><div><h3>🌱 Nhiệm vụ cộng đồng</h3><p class="muted">Những hành động nhỏ có thể tạo nên thay đổi tích cực.</p></div><span class="soft-tag">SIDE QUESTS</span></div>
+          <div id="communityQuestBoard" class="community-quest-grid"></div>
+        </div>
+
+        <section class="panel super-panel">
+          <div class="panel-title"><div><span class="eyebrow">COMMUNITY QUESTS 6.0</span><h3>🌎 Bản đồ thử thách cộng đồng</h3><p class="muted">Chọn hành động phù hợp, đánh dấu khi đã thực hiện.</p></div><span class="soft-tag">Điểm đóng góp</span></div>
+          <div class="community-scoreline"><strong id="communityScore">0</strong><span>điểm đóng góp tích lũy</span></div>
+          <div id="superCommunityBoard" class="super-challenge-grid"></div>
+          <p class="super-tip">Các thử thách là gợi ý giáo dục. Hãy chọn việc an toàn, phù hợp và xin phép người lớn khi cần tham gia hoạt động bên ngoài.</p>
+        </section>
+        <section class="panel super-panel">
+          <div class="panel-title"><div><h3>💡 Vườn ý tưởng tốt</h3><p class="muted">Một số dự án nhỏ có thể thực hiện ở lớp hoặc tại nhà.</p></div></div>
+          <div class="idea-grid">
+            <article><b>📚 Góc đổi sách</b><p>Trao đổi sách còn tốt, kèm lời giới thiệu ngắn về cuốn sách yêu thích.</p></article>
+            <article><b>🌱 Lớp học xanh</b><p>Chăm sóc cây, giữ vệ sinh và nhắc nhau tiết kiệm giấy.</p></article>
+            <article><b>🤝 Bạn cùng tiến</b><p>Học nhóm, giải thích bài cho nhau và tôn trọng tốc độ học khác nhau.</p></article>
+          </div>
+        </section>
+      </section>
+
+      <section class="page" id="page-ai">
+        <div class="page-intro">
+          <span class="eyebrow">04 / YOUR SMART ASSISTANT</span><h1>AI hỗ trợ <em>thông minh</em></h1>
+          <p>Trợ lý mô phỏng hoạt động ngoại tuyến với nhiều chế độ hỗ trợ học tập, gia đình và cộng đồng.</p>
+        </div>
+        <div class="chat-shell">
+          <div class="chat-header"><div class="ai-avatar">✦</div><div><strong>SMART AI</strong><small><span class="status-dot"></span> Trợ lý học tập và đời sống</small></div><button class="clear-chat" id="clearChat">Xóa hội thoại</button></div>
+          <div id="chatMessages" class="chat-messages">
+            <div class="message assistant"><div class="message-avatar">✦</div><div class="bubble"><strong>Xin chào! Mình là SMART AI.</strong><br/>Bạn có thể hỏi mình về bài học, nhờ giải thích một kiến thức hoặc tìm ý tưởng sống xanh. Hôm nay mình có thể giúp gì cho bạn?</div></div>
+          </div>
+          <div class="suggestions"><button data-prompt="Tạo 5 câu hỏi trắc nghiệm môn Toán lớp 9 cho mình.">Tạo câu hỏi</button><button data-prompt="Hãy kiểm tra kiến thức của mình về quang hợp.">Kiểm tra kiến thức</button><button data-prompt="Tóm tắt nội dung sau: ">Tóm tắt văn bản</button><button data-prompt="Hãy giúp mình lập kế hoạch ôn tập trong tuần.">Lập kế hoạch ôn tập</button><button data-prompt="Giải thích hiện tượng quang hợp thật dễ hiểu.">Giải thích kiến thức</button><button data-prompt="Gợi ý 5 việc làm bảo vệ môi trường ở trường học.">Sống xanh</button></div>
+          <form id="chatForm" class="chat-form"><textarea id="chatInput" rows="1" maxlength="2500" placeholder="Nhập câu hỏi của bạn..." required></textarea><button class="send-btn" type="submit" aria-label="Gửi câu hỏi">➤</button></form>
+          <div class="chat-disclaimer">SMART AI 7.0 là AI mô phỏng theo bộ quy tắc và kho kiến thức có sẵn, không kết nối mô hình AI trực tuyến. Hãy kiểm tra thông tin quan trọng với sách giáo khoa hoặc người hướng dẫn.</div>
+        </div>
+      </section>
+
+      <footer class="app-footer">SMART LIFE <span>•</span> Learn · Play · Grow <span>•</span> © 2026</footer>
+    </main>
+  </div>
+  <div id="toast" class="toast" role="status"></div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="supabase-config.js"></script>
+<script src="connect.js"></script>
+<script src="connect-ui.js"></script>
+  <script src="app.js"></script>
+  <script src="adventure.js"></script>
+  <script src="super-world.js"></script>
+  <script src="legendary.js"></script>
+  <script src="infinite-world.js"></script>
+  <script src="audio.js"></script>
+</body>
+</html>
+

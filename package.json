@@ -1,0 +1,15 @@
+{
+  "name": "smart-life",
+  "version": "7.0.1",
+  "private": true,
+  "description": "SMART LIFE Infinite Adventure 7.0.1 - compact four-area learning RPG",
+  "type": "module",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.119.1",
+    "express": "^4.21.2"
+  }
+}
