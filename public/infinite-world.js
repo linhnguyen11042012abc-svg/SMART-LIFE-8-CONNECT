@@ -1,5 +1,6 @@
-(() => {
+(async () => {
   "use strict";
+  await window.SMARTLIFEProgressReady;
   const api = window.SMART_LIFE_6;
   const study = document.querySelector("#page-study");
   if (!study || !api) return;
