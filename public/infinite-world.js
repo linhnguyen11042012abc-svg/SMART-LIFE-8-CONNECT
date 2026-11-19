@@ -181,7 +181,7 @@
     const next=e.target.closest('[data-action="next"]');if(next){cursor++;revealed=false;if(cursor>=session.length)finishStage();else renderQuestion();return;}
     const option=e.target.closest("[data-option]");if(option){const q=session[cursor],correct=option.dataset.option===q.answer;if(correct){score++;correctChime();}else{window.SMARTLIFEAudio?.wrong();}modal.querySelectorAll("[data-option]").forEach(b=>b.disabled=true);feedback(correct,`${q.answer} — ${q.explain}`);return;}
     const equip=e.target.closest("[data-equip]");if(equip){const item=allItems.find(x=>x.id===equip.dataset.equip);if(item&&state.owned.includes(item.id)){state.equipped[item.slot]=item.id;save();showCharacter();}return;}
-    const buy=e.target.closest("[data-buy]");if(buy){const item=allItems.find(x=>x.id===buy.dataset.buy);if(!item||state.owned.includes(item.id))return;if(!api.spendCoins(item.price)){alert("Bạn chưa đủ xu. Hãy hoàn thành thêm màn chơi nhé!");return;}state.owned.push(item.id);save();showShop();return;}
+    const buy=e.target.closest("[data-buy]");if(buy){const item=allItems.find(x=>x.id===buy.dataset.buy);if(!item||state.owned.includes(item.id))return;buy.disabled=true;(async()=>{const ok=await api.spendCoins(item.price);if(!ok){buy.disabled=false;alert("Không thể thanh toán. Hãy kiểm tra số dư và kết nối tài khoản nhé!");return;}state.owned.push(item.id);save();showShop();})();return;}
   },true);
   modal.addEventListener("submit",e=>{
     if(e.target.id!=="v7FillForm")return;

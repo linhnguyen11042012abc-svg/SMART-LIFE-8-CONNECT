@@ -84,7 +84,7 @@
 
     if (user) {
       $("connectProfileName").textContent =
-        "Email tài khoản: " + (user.email || "Đã đăng nhập");
+        "Tài khoản: " + (user.user_metadata?.display_name || "Học viên");
     }
   }
 
@@ -140,12 +140,20 @@
   $("connectLogout").addEventListener("click", async () => {
     const client = window.smartLifeSupabase;
     if (!client) return;
+
+    const progress = window.SMARTLIFEProgress;
+    if (progress?.userId) {
+      const synced = await progress.syncNow();
+      if (synced !== true) {
+        return message("Chưa đồng bộ được tiến trình. Hãy kiểm tra mạng rồi thử lại.");
+      }
+    }
+
     const { error } = await client.auth.signOut();
     if (error) return message("Chưa thể đăng xuất. Hãy thử lại.");
     await refreshSession();
     setMode("login");
   });
-
   if (window.smartLifeSupabase) {
     window.smartLifeSupabase.auth.onAuthStateChange(() => {
       refreshSession();

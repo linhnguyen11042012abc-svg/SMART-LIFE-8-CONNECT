@@ -1,5 +1,7 @@
-(() => {
+ (async () => {
   "use strict";
+  await window.SMARTLIFEProgressReady;
+  const client = window.smartLifeSupabase;
   const KEY = "smartLife_adventure_v2";
   const $ = s => document.querySelector(s);
   const today = () => {
@@ -39,16 +41,30 @@
     data.lastVisit = today();
   }
   const save = () => {
-    let latest = {}; try { latest = JSON.parse(localStorage.getItem(KEY) || "{}"); } catch {}
-    const merged = { ...data, ...latest };
-    merged.xp = Math.max(Number(data.xp)||0, Number(latest.xp)||0);
-    merged.coins = Math.max(Number(data.coins)||0, Number(latest.coins)||0);
-    merged.daily = { ...(data.daily||{}), ...(latest.daily||{}),
-      quests: [...new Set([...(data.daily?.quests||[]), ...(latest.daily?.quests||[])])],
-      counts: { ...(data.daily?.counts||{}), ...(latest.daily?.counts||{}) },
-      xpEarned: Math.max(Number(data.daily?.xpEarned)||0, Number(latest.daily?.xpEarned)||0) };
-    const history = [...(Array.isArray(latest.xpHistory) ? latest.xpHistory : []), ...(Array.isArray(data.xpHistory) ? data.xpHistory : [])];
-    merged.xpHistory = history.filter((item, index) => history.findIndex(other => other.at === item.at && other.reason === item.reason && other.amount === item.amount) === index).slice(-200);
+    let latest = {};
+    try { latest = JSON.parse(localStorage.getItem(KEY) || "{}"); } catch {}
+    const oldDaily = latest.daily?.date === today() ? latest.daily : {};
+    const merged = {
+      ...latest,
+      ...data,
+      xp: Math.max(0, Number(data.xp) || 0),
+      coins: Math.max(0, Number(data.coins) || 0),
+      daily: {
+        ...oldDaily,
+        ...(data.daily || {}),
+        date: today(),
+        quests: [...new Set([...(oldDaily.quests || []), ...(data.daily?.quests || [])])],
+        counts: { ...(oldDaily.counts || {}), ...(data.daily?.counts || {}) },
+        xpEarned: Math.max(0, Number(data.daily?.xpEarned) || 0)
+      }
+    };
+    const history = [
+      ...(Array.isArray(latest.xpHistory) ? latest.xpHistory : []),
+      ...(Array.isArray(data.xpHistory) ? data.xpHistory : [])
+    ];
+    merged.xpHistory = history.filter((item,index) =>
+      history.findIndex(other => other.at === item.at && other.reason === item.reason && other.amount === item.amount) === index
+    ).slice(-200);
     localStorage.setItem(KEY, JSON.stringify(merged));
   };
   const level = () => Math.floor(Number(data.xp || 0) / 100) + 1;
@@ -76,20 +92,60 @@
     { icon:"🃏", title:"Người tạo tri thức", desc:"Tạo 3 thẻ ghi nhớ", earned:data.customCards.length >= 3 },
     { icon:"💎", title:"Bậc thầy hành trình", desc:"Đạt 1.000 XP", earned:data.xp >= 1000 }
   ];
-  function addXP(amount, reason) {
-    try { const latest = JSON.parse(localStorage.getItem(KEY) || "{}"); data.xp = Math.max(data.xp, Number(latest.xp)||0); data.coins = Math.max(data.coins, Number(latest.coins)||0); data.daily.xpEarned = Math.max(Number(data.daily.xpEarned)||0, Number(latest.daily?.xpEarned)||0); } catch {}
-    const cap = 100;
-    const earned = Number(data.daily.xpEarned || 0);
-    const granted = Math.max(0, Math.min(Number(amount) || 0, cap - earned));
-    if (!granted) { if (window.toast) window.toast("Bạn đã đạt giới hạn 100 XP hôm nay. Ngày mai hãy tiếp tục nhé!"); return; }
-    const coins = Math.max(1, Math.floor(granted / 5));
-    data.xp += granted; data.coins += coins;
-    data.daily.xpEarned = earned + granted;
-    data.xpHistory = Array.isArray(data.xpHistory) ? data.xpHistory : [];
-    data.xpHistory.unshift({date: today(), amount: granted, reason: String(reason || "Hoạt động học tập"), coins, at: new Date().toISOString()});
-    data.xpHistory = data.xpHistory.slice(0, 150);
-    save(); render();
-    if (window.toast) window.toast(`+${granted} XP · +${coins} xu · ${reason}${granted < amount ? " (đã áp dụng giới hạn ngày)" : ""}`);
+  async function addXP(amount, reason) {
+    const requested = Math.max(1, Math.min(100, Math.floor(Number(amount) || 0)));
+    if (!client) {
+      if (window.toast) window.toast("Chưa kết nối được máy chủ. Phần thưởng chưa được cộng.");
+      return 0;
+    }
+    try {
+      const { data: sessionData, error: sessionError } = await client.auth.getSession();
+      if (sessionError) throw sessionError;
+      if (!sessionData?.session?.user) {
+        if (window.toast) window.toast("Bạn cần đăng nhập để nhận XP và xu đồng bộ tài khoản.");
+        return 0;
+      }
+      const eventId = crypto.randomUUID
+        ? crypto.randomUUID()
+        : "event-" + Date.now() + "-" + Math.random().toString(36).slice(2);
+      const { data: result, error } = await client.rpc("award_learning_reward", {
+        p_event_id: eventId,
+        p_amount: requested,
+        p_coins: Math.max(1, Math.floor(requested / 5)),
+        p_reason: String(reason || "Hoạt động học tập").slice(0, 120)
+      });
+      if (error) throw error;
+      const row = Array.isArray(result) ? result[0] : result;
+      if (!row) throw new Error("Máy chủ không trả về kết quả phần thưởng.");
+      const granted = Number(row.awarded) || 0;
+      const coinsGranted = Number(row.coins_awarded) || 0;
+      data.xp = Math.max(0, Number(row.current_xp) || 0);
+      data.coins = Math.max(0, Number(row.current_coins) || 0);
+      if (granted > 0) {
+        data.daily.xpEarned = Math.min(100, (Number(data.daily.xpEarned) || 0) + granted);
+        data.xpHistory = Array.isArray(data.xpHistory) ? data.xpHistory : [];
+        data.xpHistory.unshift({
+          date: today(),
+          amount: granted,
+          reason: String(reason || "Hoạt động học tập"),
+          coins: coinsGranted,
+          at: new Date().toISOString()
+        });
+        data.xpHistory = data.xpHistory.slice(0, 150);
+        save();
+        render();
+        if (window.toast) window.toast("+" + granted + " XP · +" + coinsGranted + " xu · " + (reason || "Hoạt động học tập"));
+      } else {
+        save();
+        render();
+        if (window.toast) window.toast("Bạn đã đạt giới hạn 100 XP hôm nay. Ngày mai hãy tiếp tục nhé!");
+      }
+      return granted;
+    } catch (error) {
+      console.error("SMART LIFE: Không thể nhận phần thưởng XP.", error);
+      if (window.toast) window.toast("Chưa nhận được phần thưởng. Vui lòng thử lại.");
+      return 0;
+    }
   }
   function markQuest(id) {
     if (data.daily.quests.includes(id)) return;

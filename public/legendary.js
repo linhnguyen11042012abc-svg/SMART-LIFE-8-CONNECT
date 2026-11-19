@@ -1,5 +1,7 @@
-(() => {
+ (async () => {
   "use strict";
+  await window.SMARTLIFEProgressReady;
+  const client = window.smartLifeSupabase;
   const KEY="smartLife_adventure_v2", $=s=>document.querySelector(s), today=()=>{const d=new Date();return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;};
   const safe=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
   const subjects=[
@@ -126,9 +128,87 @@
   data.xp=Math.max(0,Number(data.xp)||0);data.coins=Math.max(0,Number(data.coins)||0);data.xpHistory=Array.isArray(data.xpHistory)?data.xpHistory:[];
   data.daily={date:today(),quests:[],counts:{},xpEarned:0,...(data.daily||{})};if(data.daily.date!==today())data.daily={date:today(),quests:[],counts:{},xpEarned:0};
   data.skill=data.skill||{listen:0,read:0,write:0,speak:0};data.inventory=data.inventory||[];data.owned=data.owned||["default"];data.englishProgress=data.englishProgress||{};data.questionHistory=data.questionHistory||[];data.sessions=Number(data.sessions)||0;data.correct=Number(data.correct)||0;data.answered=Number(data.answered)||0;data.weekXP=data.weekXP||{};data.chestCount=Number(data.chestCount)||0;
-  const save=()=>{let latest={};try{latest=JSON.parse(localStorage.getItem(KEY)||"{}")}catch{}const merged={...latest,...data};merged.xp=Math.max(Number(latest.xp)||0,Number(data.xp)||0);merged.coins=Math.max(Number(latest.coins)||0,Number(data.coins)||0);merged.daily={...(latest.daily||{}),...(data.daily||{}),quests:[...new Set([...(latest.daily?.quests||[]),...(data.daily?.quests||[])])],counts:{...(latest.daily?.counts||{}),...(data.daily?.counts||{})},xpEarned:Math.max(Number(latest.daily?.xpEarned)||0,Number(data.daily?.xpEarned)||0)};const hist=[...(latest.xpHistory||[]),...(data.xpHistory||[])];merged.xpHistory=hist.filter((x,i)=>hist.findIndex(y=>y.at===x.at&&y.reason===x.reason&&y.amount===x.amount)===i).slice(-200);localStorage.setItem(KEY,JSON.stringify(merged));data.xp=merged.xp;data.coins=merged.coins;data.daily=merged.daily;data.xpHistory=merged.xpHistory;};
+  const save=()=>{
+  let latest={};
+  try{latest=JSON.parse(localStorage.getItem(KEY)||"{}")}catch{}
+  const merged={...latest,...data};
+  merged.xp=Math.max(0,Number(data.xp)||0);
+  merged.coins=Math.max(0,Number(data.coins)||0);
+  merged.daily={
+    ...(latest.daily||{}),
+    ...(data.daily||{}),
+    quests:[...new Set([...(latest.daily?.quests||[]),...(data.daily?.quests||[])])],
+    counts:{...(latest.daily?.counts||{}),...(data.daily?.counts||{})},
+    xpEarned:Math.max(Number(latest.daily?.xpEarned)||0,Number(data.daily?.xpEarned)||0)
+  };
+  const hist=[...(latest.xpHistory||[]),...(data.xpHistory||[])];
+  merged.xpHistory=hist.filter((x,i)=>hist.findIndex(y=>y.at===x.at&&y.reason===x.reason&&y.amount===x.amount)===i).slice(-200);
+  localStorage.setItem(KEY,JSON.stringify(merged));
+  data.daily=merged.daily;
+  data.xpHistory=merged.xpHistory;
+};
   const level=()=>Math.floor(data.xp/100)+1, dailyCap=100, earned=()=>Number(data.daily.xpEarned||0);
-  function award(amount,reason,coinBonus){if(Number(data.xpBoostUntil||0)>Date.now())amount*=2;else if(data.xpBoostUntil){data.xpBoostUntil=0;}const got=Math.max(0,Math.min(amount,dailyCap-earned()));if(!got){toast("Đã đạt giới hạn 100 XP hôm nay. Bạn vẫn có thể học và tích lũy thành tích!");return 0;}const coins=coinBonus??Math.max(1,Math.floor(got/5));data.xp+=got;data.coins+=coins;data.daily.xpEarned=earned()+got;data.xpHistory.unshift({date:today(),amount:got,reason,coins,at:new Date().toISOString()});data.xpHistory=data.xpHistory.slice(0,200);data.weekXP[today()]=(data.weekXP[today()]||0)+got;save();renderHeader();toast(`+${got} XP · +${coins} xu · ${reason}`);return got;}
+  async function award(amount,reason,coinBonus){
+    if(Number(data.xpBoostUntil||0)>Date.now()) amount*=2;
+    else if(data.xpBoostUntil) data.xpBoostUntil=0;
+
+    amount=Math.max(1,Math.min(100,Math.floor(Number(amount)||1)));
+    const coins=Math.max(0,Math.min(1000,Math.floor(Number(coinBonus??Math.max(1,Math.floor(amount/5)))||0)));
+
+    if(!client){
+      toast("Chưa kết nối được máy chủ. Phần thưởng chưa được cộng.");
+      return 0;
+    }
+
+    try{
+      const {data:sessionData,error:sessionError}=await client.auth.getSession();
+      if(sessionError||!sessionData?.session?.user){
+        toast("Bạn cần đăng nhập để nhận XP và xu đồng bộ tài khoản.");
+        return 0;
+      }
+
+      const eventId=crypto.randomUUID();
+      const {data:result,error}=await client.rpc("award_learning_reward",{
+        p_event_id:eventId,
+        p_amount:amount,
+        p_coins:coins,
+        p_reason:String(reason||"Hoàn thành hoạt động").slice(0,120)
+      });
+
+      if(error) throw error;
+
+      const row=Array.isArray(result)?result[0]:result;
+      if(!row) throw new Error("Máy chủ không trả về kết quả phần thưởng.");
+
+      const got=Number(row.awarded)||0;
+      const coinsGot=Number(row.coins_awarded)||0;
+
+      data.xp=Math.max(0,Number(row.current_xp)||0);
+      data.coins=Math.max(0,Number(row.current_coins)||0);
+
+      if(got>0){
+        data.daily.xpEarned=Math.min(dailyCap,earned()+got);
+        data.xpHistory.unshift({
+          date:today(),amount:got,reason,coins:coinsGot,
+          at:new Date().toISOString()
+        });
+        data.xpHistory=data.xpHistory.slice(0,200);
+        data.weekXP[today()]=(data.weekXP[today()]||0)+got;
+        save();
+        renderHeader();
+        toast(`+${got} XP · +${coinsGot} xu · ${reason}`);
+      }else{
+        save();
+        renderHeader();
+        toast("Bạn đã đạt giới hạn 100 XP hôm nay.");
+      }
+      return got;
+    }catch(error){
+      console.error("SMART LIFE award error:",error);
+      toast("Chưa nhận được phần thưởng. Vui lòng thử lại.");
+      return 0;
+    }
+  }
   function toast(m){if(window.toast)window.toast(m);else{const t=$("#toast");if(t){t.textContent=m;t.classList.add("show");setTimeout(()=>t.classList.remove("show"),2300);}}}
   function shuffle(a){const b=[...a];for(let i=b.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[b[i],b[j]]=[b[j],b[i]];}return b;}
   let screen="dashboard",session=[],cursor=0,score=0,answered=false,sessionMode="practice",activeSubject="math",clockSec=25*60,clockTimer=null,clockMode="focus",customFlash=[],bossSubject=0;
@@ -200,11 +280,59 @@
   function weeklyPage(){screen="weekly";const days=Array.from({length:7},(_,i)=>{const d=new Date();d.setDate(d.getDate()-6+i);const key=`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;return {key,label:`${d.getDate()}/${d.getMonth()+1}`,xp:data.weekXP[key]||0};});shell(`<h2>📅 Weekly Report</h2><div class="sl6-card"><h3>Báo cáo 7 ngày gần nhất</h3><div class="sl6-week">${days.map(d=>`<div><span>${d.xp} XP</span><i style="height:${Math.max(4,Math.min(100,d.xp))}%"></i><small>${d.label}</small></div>`).join("")}</div><p>Tổng XP 7 ngày: <b>${days.reduce((a,d)=>a+d.xp,0)}</b></p><p>Số lượt luyện tập: <b>${data.sessions}</b> · Câu đúng: <b>${data.correct}</b></p></div>`);}
   function creativePage(){screen="creative";shell(`<h2>🧩 Creative Lab</h2><div class="sl6-card"><h3>Tạo flashcard riêng</h3><form id="v6CardForm"><input id="v6Front" maxlength="80" placeholder="Mặt trước: câu hỏi hoặc từ khóa" required/><textarea id="v6Back" maxlength="180" placeholder="Mặt sau: lời giải hoặc kiến thức" required></textarea><button class="sl6-primary">Lưu flashcard</button></form></div><div class="sl6-card"><h3>Tạo thử thách nhanh</h3><form id="v6ChallengeForm"><input id="v6Challenge" maxlength="120" placeholder="Tên thử thách của bạn" required/><button class="sl6-secondary">Lưu thử thách</button></form><div id="v6CustomList">${(data.customChallenges||[]).map(c=>`<div class="sl6-task">🧩 ${safe(c)}</div>`).join("")}</div></div>`);}
   function render(){switch(screen){case"dashboard":dashboard();break;case"subjects":subjectsPage();break;case"practice":practicePage();break;case"daily":dailyPage();break;case"clock":clockPage();break;case"achievements":achievementsPage();break;case"library":libraryPage();break;case"character":characterPage();break;case"map":mapPage();break;case"stats":statsPage();break;case"skills":skillsPage();break;case"shop":shopPage();break;case"chest":chestPage();break;case"boss":bossPage();break;case"weekly":weeklyPage();break;case"creative":creativePage();break;default:dashboard();}}
-  hub?.addEventListener("click",e=>{const v=e.target.closest("[data-v6]");if(v){screen=v.dataset.v6;render();return;}const sub=e.target.closest("[data-subject]");if(sub){activeSubject=sub.dataset.subject;screen="practice";render();return;}const ans=e.target.closest("[data-answer]");if(ans){answerQuestion(Number(ans.dataset.answer));return;}if(e.target.id==="v6StartQuiz"){startQuiz();return;}if(e.target.id==="v6Next"){cursor++;answered=false;renderQuestion();return;}if(e.target.id==="v6ClaimQuiz"){if(sessionMode==="boss"){if(score/session.length>=0.7){data.bosses=data.bosses||[];if(!data.bosses.includes(bossSubject))data.bosses.push(bossSubject);award(25,"Chinh phục Boss",20);}else award(5,"Nỗ lực thử thách Boss");save();screen="map";}else{award(score*2+5,"Hoàn thành lượt luyện đề");screen="practice";}render();return;}const da=e.target.closest("[data-daily-answer]");if(da){const q=bank.find(x=>x.id===data.dailyQuestion);const ok=da.dataset.correct==="true";$("#dailyFeedback").innerHTML=`<div class="sl6-feedback ${ok?"good":"bad"}">${ok?"Chính xác!":"Chưa đúng."} ${safe(q.explain)}</div>`;hub.querySelectorAll("[data-daily-answer]").forEach(b=>b.disabled=true);if(ok){window.SMARTLIFEAudio?.correct();award(5,"Câu hỏi hằng ngày");}else{window.SMARTLIFEAudio?.wrong();}return;}const dt=e.target.closest("[data-daily-task]");if(dt){const i=dt.dataset.dailyTask;data.dailyDone=data.dailyDone||{};const k=today()+"-"+i;if(data.dailyDone[k])return;data.dailyDone[k]=true;dt.disabled=true;dt.textContent="Đã nhận";award(5,"Nhiệm vụ hằng ngày");return;}const c=e.target.closest("[data-clock]");if(c){stopClock();clockMode=c.dataset.clock;clockSec=clockMode==="focus"?1500:clockMode==="short"?300:600;$("#v6Clock").textContent=fmt(clockSec);return;}if(e.target.id==="clockStart"){if(!clockTimer)clockTimer=setInterval(()=>{clockSec=Math.max(0,clockSec-1);const el=$("#v6Clock");if(el)el.textContent=fmt(clockSec);if(clockSec===0){stopClock();if(clockMode==="focus"){data.sessions++;award(10,"Hoàn thành Pomodoro");}toast("Đã hết giờ!");}},1000);return;}if(e.target.id==="clockPause"){stopClock();return;}if(e.target.id==="clockReset"){stopClock();clockSec=clockMode==="focus"?1500:clockMode==="short"?300:600;$("#v6Clock").textContent=fmt(clockSec);return;}const rev=e.target.closest("[data-reveal]");if(rev){$("#v6Reveal").textContent=rev.dataset.back;return;}const outfit=e.target.closest("[data-outfit]");if(outfit){if(!data.owned.includes(outfit.dataset.outfit)){toast("Bạn chưa sở hữu trang phục này.");return;}data.profile.outfit=outfit.dataset.outfit;data.profile.avatar=({default:"🧑‍🚀",scholar:"🧙",knight:"🛡️",explorer:"🧭",legend:"🐉"})[outfit.dataset.outfit];save();characterPage();return;}const buy=e.target.closest("[data-buy]");if(buy){const cost=Number(buy.dataset.cost),id=buy.dataset.buy;if(data.coins<cost){toast("Bạn chưa đủ xu.");return;}if(["scholar","knight","explorer"].includes(id)&&data.owned.includes(id)){toast("Bạn đã sở hữu vật phẩm này.");return;}data.coins-=cost;if(["scholar","knight","explorer"].includes(id))data.owned.push(id);else if(id==="x2"){data.xpBoostUntil=Date.now()+30*60*1000;}else if(id==="rename"){data.renameTicket=true;}else data.inventory.push(id);save();shopPage();toast(id==="x2"?"Thuốc X2 XP đã kích hoạt trong 30 phút!":"Mua vật phẩm thành công!");return;}if(e.target.id==="openChest"){if(data.coins<50){toast("Bạn cần 50 xu để mở rương.");return;}data.coins-=50;const roll=Math.random()*100;let reward;if(roll<60)reward={rarity:"Thường",name:"20 xu",coins:20};else if(roll<85)reward={rarity:"Hiếm",name:"Thuốc X2 XP",item:"x2"};else if(roll<97)reward={rarity:"Sử thi",name:"Khiên Streak",item:"shield"};else reward={rarity:"Huyền thoại",name:"Trang phục Rồng",item:"legend"};if(reward.coins)data.coins+=reward.coins;if(reward.item){if(reward.item==="legend")data.owned.push("legend");else data.inventory.push(reward.item);}data.chestCount++;save();$("#chestResult").innerHTML=`<div class="sl6-feedback good">🎉 ${reward.rarity}: ${reward.name}</div>`;renderHeader();return;}const skill=e.target.closest("[data-skill]");if(skill){const k=skill.dataset.skill;skillSession={key:k,items:shuffle(skillSets[k]).slice(0,3),index:0,correct:0};renderSkillTask();return;}const skillAudio=e.target.closest("[data-skill-audio]");if(skillAudio&&skillSession){const item=skillSession.items[skillSession.index];speakSample(skillSession.key==="listen"?item.text:(item.target||item.q));return;}const skillMic=e.target.closest("[data-skill-mic]");if(skillMic){startSkillMic();return;}const skillAns=e.target.closest("[data-skill-answer]");if(skillAns&&skillSession){const item=skillSession.items[skillSession.index],ok=Number(skillAns.dataset.skillAnswer)===item.answer;hub.querySelectorAll("[data-skill-answer]").forEach(b=>b.disabled=true);skillFeedback(ok,ok?`Chính xác! ${item.explain}`:`Chưa đúng. ${item.explain}`);return;}const skillSubmit=e.target.closest("[data-skill-submit]");if(skillSubmit&&skillSession){const item=skillSession.items[skillSession.index],value=$("#skillText")?.value.trim()||"";let ok=false,msg="";if(skillSession.key==="write"){const words=value.split(/\s+/).filter(Boolean);ok=words.length>=item.min&&item.keywords.every(k=>value.toLowerCase().includes(k));msg=ok?"Bài viết đạt yêu cầu cơ bản. "+item.explain:`Bài cần ít nhất ${item.min} từ và dùng từ gợi ý phù hợp. Hãy chỉnh sửa rồi thử lại.`;}else{const a=value.toLowerCase().replace(/[^a-z ]/g,"").replace(/\s+/g," ").trim(),b=item.target.toLowerCase().replace(/[^a-z ]/g,"").replace(/\s+/g," ").trim();ok=!!a&&(a===b||a.includes(b)||b.includes(a));msg=ok?"Bạn đã nói/nhập đúng câu mẫu!":"Câu chưa khớp với mẫu. Hãy nghe lại và thử thêm nhé.";}if(ok||skillSession.key==="speak"){skillFeedback(ok,msg);}else{$("#skillFeedback").innerHTML=`<div class="sl6-feedback bad">${safe(msg)}</div>`;window.SMARTLIFEAudio?.wrong();}return;}const skillNext=e.target.closest("[data-skill-next]");if(skillNext&&skillSession){skillSession.index++;if(skillSession.index>=skillSession.items.length){finishSkillSession();}else renderSkillTask();return;}const boss=e.target.closest("[data-boss]");if(boss){bossSubject=boss.dataset.boss;const s=subjects.find(x=>x.id===bossSubject);const qs=shuffle(bank.filter(q=>q.subject===bossSubject)).slice(0,10);const correct=qs.filter((q,i)=>i%2===0).length;$("#bossArea").innerHTML=`<div class="sl6-card"><h3>👑 Boss ${s.world}</h3><p>Đây là thử thách tổng hợp 10 câu. Hoàn thành lượt luyện đề môn này trước để đủ điều kiện mở Boss.</p><button class="sl6-primary" id="bossStart">Bắt đầu Boss Challenge</button></div>`;data.pendingBoss=qs;return;}if(e.target.id==="bossStart"){const qs=data.pendingBoss||[];const ok=qs.length>=10&&data.questionHistory.filter(id=>id.startsWith(bossSubject+"-")).length>=10;if(!ok){toast("Hãy luyện ít nhất 10 câu của môn này trước khi đánh Boss.");return;}session=qs;cursor=0;score=0;answered=false;sessionMode="boss";$("#bossArea").innerHTML='<div id="v6QuizArea"></div>';renderQuestion();return;}const map=e.target.closest("[data-map-subject]");if(map){activeSubject=map.dataset.mapSubject;screen="practice";render();return;}if(e.target.id==="v6ClaimQuiz")return;});
+  hub?.addEventListener("click",e=>{const v=e.target.closest("[data-v6]");if(v){screen=v.dataset.v6;render();return;}const sub=e.target.closest("[data-subject]");if(sub){activeSubject=sub.dataset.subject;screen="practice";render();return;}const ans=e.target.closest("[data-answer]");if(ans){answerQuestion(Number(ans.dataset.answer));return;}if(e.target.id==="v6StartQuiz"){startQuiz();return;}if(e.target.id==="v6Next"){cursor++;answered=false;renderQuestion();return;}if(e.target.id==="v6ClaimQuiz"){if(sessionMode==="boss"){if(score/session.length>=0.7){data.bosses=data.bosses||[];if(!data.bosses.includes(bossSubject))data.bosses.push(bossSubject);award(25,"Chinh phục Boss",20);}else award(5,"Nỗ lực thử thách Boss");save();screen="map";}else{award(score*2+5,"Hoàn thành lượt luyện đề");screen="practice";}render();return;}const da=e.target.closest("[data-daily-answer]");if(da){const q=bank.find(x=>x.id===data.dailyQuestion);const ok=da.dataset.correct==="true";$("#dailyFeedback").innerHTML=`<div class="sl6-feedback ${ok?"good":"bad"}">${ok?"Chính xác!":"Chưa đúng."} ${safe(q.explain)}</div>`;hub.querySelectorAll("[data-daily-answer]").forEach(b=>b.disabled=true);if(ok){window.SMARTLIFEAudio?.correct();award(5,"Câu hỏi hằng ngày");}else{window.SMARTLIFEAudio?.wrong();}return;}const dt=e.target.closest("[data-daily-task]");if(dt){const i=dt.dataset.dailyTask;data.dailyDone=data.dailyDone||{};const k=today()+"-"+i;if(data.dailyDone[k])return;data.dailyDone[k]=true;dt.disabled=true;dt.textContent="Đã nhận";award(5,"Nhiệm vụ hằng ngày");return;}const c=e.target.closest("[data-clock]");if(c){stopClock();clockMode=c.dataset.clock;clockSec=clockMode==="focus"?1500:clockMode==="short"?300:600;$("#v6Clock").textContent=fmt(clockSec);return;}if(e.target.id==="clockStart"){if(!clockTimer)clockTimer=setInterval(()=>{clockSec=Math.max(0,clockSec-1);const el=$("#v6Clock");if(el)el.textContent=fmt(clockSec);if(clockSec===0){stopClock();if(clockMode==="focus"){data.sessions++;award(10,"Hoàn thành Pomodoro");}toast("Đã hết giờ!");}},1000);return;}if(e.target.id==="clockPause"){stopClock();return;}if(e.target.id==="clockReset"){stopClock();clockSec=clockMode==="focus"?1500:clockMode==="short"?300:600;$("#v6Clock").textContent=fmt(clockSec);return;}const rev=e.target.closest("[data-reveal]");if(rev){$("#v6Reveal").textContent=rev.dataset.back;return;}const outfit=e.target.closest("[data-outfit]");if(outfit){if(!data.owned.includes(outfit.dataset.outfit)){toast("Bạn chưa sở hữu trang phục này.");return;}data.profile.outfit=outfit.dataset.outfit;data.profile.avatar=({default:"🧑‍🚀",scholar:"🧙",knight:"🛡️",explorer:"🧭",legend:"🐉"})[outfit.dataset.outfit];save();characterPage();return;}const buy=e.target.closest("[data-buy]");if(buy){const cost=Number(buy.dataset.cost),id=buy.dataset.buy;if(["scholar","knight","explorer"].includes(id)&&data.owned.includes(id)){toast("Bạn đã sở hữu vật phẩm này.");return;}if(!client){toast("Chưa kết nối được máy chủ.");return;}buy.disabled=true;(async()=>{try{const {data:balance,error}=await client.rpc("spend_learning_coins",{p_amount:cost});if(error)throw error;const currentCoins=Number(Array.isArray(balance)?balance[0]:balance);if(!Number.isFinite(currentCoins))throw new Error("Số dư máy chủ không hợp lệ.");data.coins=Math.max(0,currentCoins);if(["scholar","knight","explorer"].includes(id))data.owned.push(id);else if(id==="x2")data.xpBoostUntil=Date.now()+30*60*1000;else if(id==="rename")data.renameTicket=true;else data.inventory.push(id);save();renderHeader();shopPage();toast(id==="x2"?"Thuốc X2 XP đã kích hoạt trong 30 phút!":"Mua vật phẩm thành công!");}catch(error){console.error("SMART LIFE purchase error:",error);buy.disabled=false;toast("Không thể mua vật phẩm. Có thể bạn chưa đủ xu.");}})();return;}if(e.target.id==="openChest"){
+const chestButton=e.target;
+if(!client){toast("Chưa kết nối được máy chủ.");return;}
+chestButton.disabled=true;
+(async()=>{
+try{
+data.pendingChestEventId=data.pendingChestEventId||crypto.randomUUID();
+const eventId=data.pendingChestEventId;
+save();
+const {data:result,error}=await client.rpc("open_learning_chest",{
+p_event_id:eventId
+});
+if(error)throw error;
+const row=Array.isArray(result)?result[0]:result;
+if(!row)throw new Error("Máy chủ không trả về kết quả mở rương.");
+data.chestEvents=Array.isArray(data.chestEvents)?data.chestEvents:[];
+if(!data.chestEvents.includes(eventId)){
+const item=row.reward_item;
+const coins=Number(row.reward_coins)||0;
+data.coins=Math.max(0,Number(row.current_coins)||0);
+if(item==="legend"){
+if(!data.owned.includes("legend"))data.owned.push("legend");
+}else if(item&&item!=="none"){
+data.inventory.push(item);
+if(item==="x2")data.xpBoostUntil=Date.now()+30*60*1000;
+}
+data.chestCount++;
+data.chestEvents.push(eventId);
+data.chestEvents=data.chestEvents.slice(-100);
+}
+delete data.pendingChestEventId;
+save();
+renderHeader();
+const rewards={
+none:{rarity:"Thường",name:"20 xu"},
+x2:{rarity:"Hiếm",name:"Thuốc X2 XP"},
+shield:{rarity:"Sử thi",name:"Khiên Streak"},
+legend:{rarity:"Huyền thoại",name:"Trang phục Rồng"}
+};
+const reward=rewards[row.reward_item]||{rarity:"Phần thưởng",name:"Phần thưởng đã nhận"};
+$("#chestResult").innerHTML=`<div class="sl6-feedback good">🎉 ${reward.rarity}: ${reward.name}${Number(row.reward_coins)>0?" (+"+Number(row.reward_coins)+" xu)":""}</div>`;
+}catch(error){
+console.error("SMART LIFE chest error:",error);
+chestButton.disabled=false;
+toast("Không thể xác nhận kết quả mở rương. Hãy thử lại.");
+}
+})();
+return;
+}const skill=e.target.closest("[data-skill]");if(skill){const k=skill.dataset.skill;skillSession={key:k,items:shuffle(skillSets[k]).slice(0,3),index:0,correct:0};renderSkillTask();return;}const skillAudio=e.target.closest("[data-skill-audio]");if(skillAudio&&skillSession){const item=skillSession.items[skillSession.index];speakSample(skillSession.key==="listen"?item.text:(item.target||item.q));return;}const skillMic=e.target.closest("[data-skill-mic]");if(skillMic){startSkillMic();return;}const skillAns=e.target.closest("[data-skill-answer]");if(skillAns&&skillSession){const item=skillSession.items[skillSession.index],ok=Number(skillAns.dataset.skillAnswer)===item.answer;hub.querySelectorAll("[data-skill-answer]").forEach(b=>b.disabled=true);skillFeedback(ok,ok?`Chính xác! ${item.explain}`:`Chưa đúng. ${item.explain}`);return;}const skillSubmit=e.target.closest("[data-skill-submit]");if(skillSubmit&&skillSession){const item=skillSession.items[skillSession.index],value=$("#skillText")?.value.trim()||"";let ok=false,msg="";if(skillSession.key==="write"){const words=value.split(/\s+/).filter(Boolean);ok=words.length>=item.min&&item.keywords.every(k=>value.toLowerCase().includes(k));msg=ok?"Bài viết đạt yêu cầu cơ bản. "+item.explain:`Bài cần ít nhất ${item.min} từ và dùng từ gợi ý phù hợp. Hãy chỉnh sửa rồi thử lại.`;}else{const a=value.toLowerCase().replace(/[^a-z ]/g,"").replace(/\s+/g," ").trim(),b=item.target.toLowerCase().replace(/[^a-z ]/g,"").replace(/\s+/g," ").trim();ok=!!a&&(a===b||a.includes(b)||b.includes(a));msg=ok?"Bạn đã nói/nhập đúng câu mẫu!":"Câu chưa khớp với mẫu. Hãy nghe lại và thử thêm nhé.";}if(ok||skillSession.key==="speak"){skillFeedback(ok,msg);}else{$("#skillFeedback").innerHTML=`<div class="sl6-feedback bad">${safe(msg)}</div>`;window.SMARTLIFEAudio?.wrong();}return;}const skillNext=e.target.closest("[data-skill-next]");if(skillNext&&skillSession){skillSession.index++;if(skillSession.index>=skillSession.items.length){finishSkillSession();}else renderSkillTask();return;}const boss=e.target.closest("[data-boss]");if(boss){bossSubject=boss.dataset.boss;const s=subjects.find(x=>x.id===bossSubject);const qs=shuffle(bank.filter(q=>q.subject===bossSubject)).slice(0,10);const correct=qs.filter((q,i)=>i%2===0).length;$("#bossArea").innerHTML=`<div class="sl6-card"><h3>👑 Boss ${s.world}</h3><p>Đây là thử thách tổng hợp 10 câu. Hoàn thành lượt luyện đề môn này trước để đủ điều kiện mở Boss.</p><button class="sl6-primary" id="bossStart">Bắt đầu Boss Challenge</button></div>`;data.pendingBoss=qs;return;}if(e.target.id==="bossStart"){const qs=data.pendingBoss||[];const ok=qs.length>=10&&data.questionHistory.filter(id=>id.startsWith(bossSubject+"-")).length>=10;if(!ok){toast("Hãy luyện ít nhất 10 câu của môn này trước khi đánh Boss.");return;}session=qs;cursor=0;score=0;answered=false;sessionMode="boss";$("#bossArea").innerHTML='<div id="v6QuizArea"></div>';renderQuestion();return;}const map=e.target.closest("[data-map-subject]");if(map){activeSubject=map.dataset.mapSubject;screen="practice";render();return;}if(e.target.id==="v6ClaimQuiz")return;});
   hub?.addEventListener("submit",e=>{if(e.target.id==="v6NameForm"){e.preventDefault();data.profile.name=$("#v6Name").value.trim()||"Nhà thám hiểm";save();characterPage();}if(e.target.id==="v6CardForm"){e.preventDefault();data.customCards=data.customCards||[];data.customCards.push({front:$("#v6Front").value.trim(),back:$("#v6Back").value.trim()});save();award(2,"Tạo flashcard");creativePage();}if(e.target.id==="v6ChallengeForm"){e.preventDefault();data.customChallenges=data.customChallenges||[];data.customChallenges.push($("#v6Challenge").value.trim());save();creativePage();}});
   // keep XP data in the same legacy store; do not clear or rename old user data
   if(!data.daily.xpEarned)data.daily.xpEarned=0;save();
   // ensure all 300 authored bank entries are present and deterministic per build
-  window.SMART_LIFE_6={questionCount:bank.length,subjects:subjects.map(s=>s.name),version:"7.0.1",questionBank:bank,awardXP:award,getCoins:()=>data.coins,spendCoins:(n)=>{if(data.coins<n)return false;data.coins-=n;save();renderHeader();return true;}};
+  window.SMART_LIFE_6={questionCount:bank.length,subjects:subjects.map(s=>s.name),version:"7.0.1",questionBank:bank,awardXP:award,getCoins:()=>data.coins,spendCoins:async(n)=>{if(!client||!Number.isFinite(Number(n))||Number(n)<=0)return false;try{const {data:balance,error}=await client.rpc("spend_learning_coins",{p_amount:Math.floor(Number(n))});if(error)throw error;const currentCoins=Number(Array.isArray(balance)?balance[0]:balance);if(!Number.isFinite(currentCoins))throw new Error("Số dư không hợp lệ.");data.coins=Math.max(0,currentCoins);save();renderHeader();return true;}catch(error){console.error("SMART LIFE spendCoins error:",error);return false;}}};
   dashboard();
 })();
