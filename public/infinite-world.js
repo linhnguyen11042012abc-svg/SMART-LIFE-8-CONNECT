@@ -20,20 +20,20 @@
   ];
   const outfits = [
     {id:"traveler",name:"Áo nhà thám hiểm",slot:"outfit",price:0,color:"#2f8f72"},
-    {id:"royal",name:"Áo choàng hoàng gia",slot:"outfit",price:90,color:"#7756b8"},
-    {id:"ocean",name:"Giáp đại dương",slot:"outfit",price:110,color:"#2586ad"},
-    {id:"sun",name:"Áo choàng sa mạc",slot:"outfit",price:120,color:"#c27a36"}
+    {id:"royal",name:"Áo choàng hoàng gia",slot:"outfit",price:25,color:"#7756b8"},
+    {id:"ocean",name:"Giáp đại dương",slot:"outfit",price:30,color:"#2586ad"},
+    {id:"sun",name:"Áo choàng sa mạc",slot:"outfit",price:30,color:"#c27a36"}
   ];
   const hats = [
-    {id:"cap",name:"Mũ phiêu lưu",slot:"hat",price:35,emoji:"🧢"},
-    {id:"wizard",name:"Mũ pháp sư",slot:"hat",price:65,emoji:"🎩"},
-    {id:"crown",name:"Vương miện",slot:"hat",price:100,emoji:"👑"}
+    {id:"cap",name:"Mũ phiêu lưu",slot:"hat",price:15,emoji:"🧢"},
+    {id:"wizard",name:"Mũ pháp sư",slot:"hat",price:20,emoji:"🎩"},
+    {id:"crown",name:"Vương miện",slot:"hat",price:30,emoji:"👑"}
   ];
   const hands = [
-    {id:"book",name:"Sách tri thức",slot:"hand",price:40,emoji:"📘"},
-    {id:"wand",name:"Trượng ánh sáng",slot:"hand",price:75,emoji:"🪄"},
-    {id:"lantern",name:"Đèn khám phá",slot:"hand",price:60,emoji:"🏮"},
-    {id:"flag",name:"Cờ hành trình",slot:"hand",price:45,emoji:"🚩"}
+    {id:"book",name:"Sách tri thức",slot:"hand",price:15,emoji:"📘"},
+    {id:"wand",name:"Trượng ánh sáng",slot:"hand",price:20,emoji:"🪄"},
+    {id:"lantern",name:"Đèn khám phá",slot:"hand",price:20,emoji:"🏮"},
+    {id:"flag",name:"Cờ hành trình",slot:"hand",price:15,emoji:"🚩"}
   ];
   const allItems = [...outfits,...hats,...hands];
   const read = () => { try { return JSON.parse(localStorage.getItem(STORE)||"{}"); } catch { return {}; } };
