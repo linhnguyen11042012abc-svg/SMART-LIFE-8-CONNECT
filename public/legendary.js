@@ -258,7 +258,7 @@
     ]
   };
   let skillSession=null;
-  function speakSample(text){if(!('speechSynthesis' in window)){toast("Thiết bị chưa hỗ trợ đọc mẫu tự động.");return;}speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(text);u.lang="en-US";u.rate=.88;speechSynthesis.speak(u);}
+  function speakSample(text){if(!('speechSynthesis' in window)){toast("Thiết bị chưa hỗ trợ đọc mẫu tự động.");return;}speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(text);u.lang="en-US";u.rate=.88;u.volume=window.SMARTLIFEAudio?.getVoiceVolume?.()??1;speechSynthesis.speak(u);}
   function skillsPage(){screen="skills";shell(`<h2>🌳 English Skill Tree</h2><p class="sl6-muted">Mỗi nhánh có bài luyện riêng. Hoàn thành bài tập để nhận điểm kỹ năng và XP.</p><div class="sl6-grid sl7-skill-grid">${Object.entries(skillNames).map(([k,n])=>`<div class="sl6-tile"><span>${({listen:"🎧",read:"📖",write:"✍️",speak:"💬"})[k]}</span><b>${n}</b><small>Cấp ${Math.min(5,Math.floor(data.skill[k]/2)+1)} · ${data.skill[k]} điểm kỹ năng</small><div class="sl7-skill-meter"><i style="width:${(data.skill[k]%2)*50}%"></i></div><button class="sl6-secondary" data-skill="${k}">Bắt đầu luyện</button></div>`).join("")}</div><div id="skillPractice"><p class="sl6-muted">Chọn một nhánh kỹ năng để bắt đầu bài tập.</p></div>`);}
   function renderSkillTask(){
     const host=$("#skillPractice");if(!host||!skillSession)return;
